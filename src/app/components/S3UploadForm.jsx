@@ -2,19 +2,26 @@
 import { useState } from "react";
 import { Upload, Button, Form, Spin, message } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
+import Card from "antd/es/card/Card";
 
 const UploadForm = () => {
   const [file, setFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(false); 
 
   const handleFileChange = (info) => {
-    if (info.file.status === "done" || info.file.status === "removed") {
-      setFile(info.file.originFileObj || null);
+    if (info.fileList.length > 0) {
+      const selectedFile = info.fileList[0].originFileObj;
+      setFile(selectedFile);
+    } else {
+      setFile(null);
     }
   };
 
   const handleSubmit = async () => {
-    if (!file) return;
+    if (!file) {
+      message.error("No file selected.");
+      return;
+    }
 
     setUploading(true);
     const formData = new FormData();
@@ -32,23 +39,35 @@ const UploadForm = () => {
       } else {
         message.error(data.error || "Upload failed.");
       }
-      setUploading(false);
+
+      setFile(null);
     } catch (error) {
       message.error("An error occurred during upload.");
+    } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto", padding: 20 }}>
+    <Card
+      style={{
+        backgroundColor: "lavender",
+        width: 400,
+        textAlign: "center",
+        padding: 20,
+        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        margin: "0 auto",
+      }}
+    >
       <h1>Upload Files to S3 Bucket</h1>
 
       <Form onFinish={handleSubmit}>
         <Form.Item>
           <Upload
-            beforeUpload={() => false}
+            beforeUpload={() => false} 
             onChange={handleFileChange}
             accept="image/*"
+            maxCount={1} 
           >
             <Button icon={<UploadOutlined />}>Select File</Button>
           </Upload>
@@ -58,14 +77,14 @@ const UploadForm = () => {
           <Button
             type="primary"
             htmlType="submit"
-            disabled={!file || uploading}
+            disabled={!file || uploading} 
             block
           >
             {uploading ? <Spin size="small" /> : "Upload"}
           </Button>
         </Form.Item>
       </Form>
-    </div>
+    </Card>
   );
 };
 
