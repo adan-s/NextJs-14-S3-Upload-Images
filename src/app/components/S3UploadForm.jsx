@@ -1,16 +1,19 @@
 "use client";
 import { useState } from "react";
+import { Upload, Button, Form, Spin, message } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 
 const UploadForm = () => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
 
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+  const handleFileChange = (info) => {
+    if (info.file.status === "done" || info.file.status === "removed") {
+      setFile(info.file.originFileObj || null);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!file) return;
 
     setUploading(true);
@@ -24,25 +27,45 @@ const UploadForm = () => {
       });
 
       const data = await response.json();
-      console.log(data.status);
+      if (response.ok) {
+        message.success("File uploaded successfully!");
+      } else {
+        message.error(data.error || "Upload failed.");
+      }
       setUploading(false);
     } catch (error) {
-      console.log(error);
+      message.error("An error occurred during upload.");
       setUploading(false);
     }
-  }
+  };
 
   return (
-    <>
+    <div style={{ maxWidth: 400, margin: "0 auto", padding: 20 }}>
       <h1>Upload Files to S3 Bucket</h1>
 
-      <form onSubmit={handleSubmit}>
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-        <button type="submit" disabled={!file || uploading}>
-          {uploading ? "Uploading..." : "Upload"}
-        </button>
-      </form>
-    </>
+      <Form onFinish={handleSubmit}>
+        <Form.Item>
+          <Upload
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+            accept="image/*"
+          >
+            <Button icon={<UploadOutlined />}>Select File</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            disabled={!file || uploading}
+            block
+          >
+            {uploading ? <Spin size="small" /> : "Upload"}
+          </Button>
+        </Form.Item>
+      </Form>
+    </div>
   );
 };
 

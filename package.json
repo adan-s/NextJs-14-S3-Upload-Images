@@ -9,7 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@aws-sdk/client-s3": "^3.433.0",
+    "antd": "^5.21.1",
     "next": "13.5.6",
     "react": "^18",
     "react-dom": "^18"
